@@ -19,7 +19,8 @@ def cli():
     ["DEBUG", "DEFAULT", "DEVELOP"]))
 @click.option("--sub_output_path", default="vocab", help=u"词典文件输出路径")
 @click.option("--fields", default="", help=u"需要保留的字段,逗号分隔,默认全部保留")
-def generateVoca(mode, sub_output_path, fields):
+@click.option("--data_dir", default="data", help=u"数据处理路径")
+def generateVoca(mode, sub_output_path, fields, data_dir):
     u'''提取所有json文件的词典, 并将所有的review转换成为字典
 
     json文件的查找路径为当前路径之下的data/source
@@ -36,8 +37,9 @@ def generateVoca(mode, sub_output_path, fields):
     e.g --fields asin,reviewerID,overall,reviewText
 
     '''
-    runConfig = config.configs[mode]("generateVoca")
+    runConfig = config.configs[mode]("generateVoca_"+data_dir)
     runConfig.setConsoleLogLevel("DEBUG")
+    runConfig.setSourcePath(data_dir)
     runConfig.checkValid()
     logger = runConfig.getLogger()
     logger.info("the command line is %s", " ".join(sys.argv))
@@ -49,7 +51,7 @@ def generateVoca(mode, sub_output_path, fields):
     users = []
     items = []
     if not os.path.exists(os.path.join(outputPath, sub_output_path)):
-        os.mkdir(os.mkdir(os.path.join(outputPath, sub_output_path)))
+        os.mkdir(os.path.join(outputPath, sub_output_path))
 
     for filename in os.listdir(inputPath):
         @recordTime
@@ -111,10 +113,12 @@ def generateVoca(mode, sub_output_path, fields):
 @cli.command()
 @click.option("--mode", type=click.Choice(
     ["DEBUG", "DEFAULT", "DEVELOP"]))
-def extractInfo(mode):
+@click.option("--data_dir", default="data", help=u"数据处理路径")
+def extractInfo(mode, data_dir):
     '''从转换后的用户数据提取信息'''
-    runConfig = config.configs[mode]("extractInfo")
+    runConfig = config.configs[mode]("extractInfo_"+data_dir)
     runConfig.setConsoleLogLevel("DEBUG")
+    runConfig.setSourcePath(data_dir)
     runConfig.checkValid()
     logger = runConfig.getLogger()
     logger.info("the command line is %s", " ".join(sys.argv))

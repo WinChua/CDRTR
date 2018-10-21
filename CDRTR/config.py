@@ -17,11 +17,17 @@ class Config:
     _logger = None
 
     MODE = "DEFAULT"
-    SOURCE_PATH = os.path.join(dirname, "data", "source")
+    DATADIR = "{data}"
     PREPROCESS_CONFIG = {
-        "source_path": os.path.join(dirname, "data", "source"),
-        "output_path": os.path.join(dirname, "data", "preprocess")
+        "source_path": os.path.join(dirname, DATADIR, "source"),
+        "output_path": os.path.join(dirname, DATADIR, "preprocess")
     }
+
+    @classmethod
+    def setSourcePath(cls, path):
+        for k in cls.PREPROCESS_CONFIG:
+            cls.PREPROCESS_CONFIG[k] = cls.PREPROCESS_CONFIG[k].format(data=path)
+
     TF_CONFIG = {
         "per_process_gpu_memory_fraction": 0.15,
         "allow_growth": True
