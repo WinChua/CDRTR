@@ -1,1 +1,1 @@
-from .core import hmm
+from .core.core import hmm

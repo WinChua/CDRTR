@@ -7,6 +7,7 @@ import click
 from .utils import buildVoca, transReview
 from ..utils import pkdump, recordTime
 from .. import config
+from .cold import generateColdUser
 
 
 @click.group()
@@ -108,6 +109,31 @@ def generateVoca(mode, sub_output_path, fields, data_dir):
                         mapper, os.path.join(transOutputPath, filename),
                         fields)
         trans(filename)
+
+    @recordTime
+    def getColdUser():
+        files = [os.path.join(inputPath, f) for f in os.listdir(inputPath)]
+        SOURCE, TARGET = files[:2]
+        ColdSU, ColdTU, OverLapU = generateColdUser(SOURCE, TARGET)
+        logger.info("cold user count in %s is %d",
+                    os.path.basename(SOURCE),
+                    len(ColdSU))
+        logger.info("cold user count in %s is %d",
+                    os.path.basename(TARGET),
+                    len(ColdTU))
+        logger.info("overlap user count is %d", len(OverLapU))
+
+        ColdOutputPath = os.path.join(outputPath, "cold")
+        if not os.path.exists(ColdOutputPath):
+            os.mkdir(ColdOutputPath)
+
+        ColdSO = os.path.join(ColdOutputPath, os.path.basename(SOURCE))
+        ColdTO = os.path.join(ColdOutputPath, os.path.basename(TARGET))
+        pkdump(ColdSU, ColdSO.rsplit(".", 1)[0]+".pk")
+        pkdump(ColdTU, ColdTO.rsplit(".", 1)[0]+".pk")
+        pkdump(OverLapU, os.path.join(ColdOutputPath, "overlapUser.pk"))
+
+    getColdUser()
 
 
 @cli.command()

@@ -102,7 +102,7 @@ def transReview(filename, mapper, outputfilename, fields=None):
 
     for lines in _transReview(filename, mapper, fields):
         with open(outputfilename, "a") as f:
-            f.write("\n".join(lines))
+            f.write("\n".join(lines) + "\n")
 
 
 def _transReview(filename, mapper, fields=None):
