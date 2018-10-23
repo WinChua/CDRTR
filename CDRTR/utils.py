@@ -23,7 +23,7 @@ def recordTime(func):
 
     @functools.wraps(func)
     def innerWrapper(*args, **kwargs):
-        logger.debug("calling func: %s, args: %s, kwargs: %s",
+        logger.debug("calling  func: %s, args: %s, kwargs: %s",
                      func.func_name,
                      " ".join(args),
                      " ".join("{k}={v}".format(k=k, v=v)

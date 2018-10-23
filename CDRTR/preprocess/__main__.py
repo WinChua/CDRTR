@@ -62,41 +62,30 @@ def generateVoca(mode, sub_output_path, fields, data_dir):
             users.append(user)
             items.append(item)
             outputDir = os.path.join(outputPath, sub_output_path)
-            outputName = os.path.join(outputDir,
-                                      filename.rsplit(".", 1)[0]+".pk")
-            pkdump(voca, outputName)
-            outputName = os.path.join(outputDir,
-                                      filename.rsplit(".", 1)[0]+"_user.pk")
-            pkdump(user, outputName)
-            outputName = os.path.join(outputDir,
-                                      filename.rsplit(".", 1)[0]+"_item.pk")
-            pkdump(item, outputName)
+            fnPrefix = filename.rsplit(".", 1)[0]
+            for suffix, data in zip((".pk", "_user.pk", "_item.pk"),
+                                    (voca, user, item)):
+                outputName = os.path.join(outputDir, fnPrefix + suffix)
+                pkdump(data, outputName)
 
         buildMapper(filename)
 
-    voca = set()
-    for v in vocas:
-        voca.update(set(v.values()))
-    voca = {i: word for i, word in enumerate(voca)}
-    pkdump(voca, os.path.join(outputPath, "vocab", "allDomain.pk"))
-
-    user = set()
-    for v in users:
-        user.update(set(v.values()))
-    user = {i: u for i, u in enumerate(user)}
-    pkdump(user, os.path.join(outputPath, "vocab", "allDomain_user.pk"))
-
-    item = set()
-    for v in items:
-        item.update(set(v.values()))
-    item = {i: it for i, it in enumerate(item)}
-    pkdump(item, os.path.join(outputPath, "vocab", "allDomain_item.pk"))
+    mappers = []
+    for suffix, data in zip((".pk", "_user.pk", "_item.pk"),
+                            (vocas, users, items)):
+        dumpData = set()
+        for d in data:
+            dumpData.update(set(d.values()))
+        dumpData = {i: content for i, content in enumerate(dumpData)}
+        pkdump(dumpData, os.path.join(outputPath, "vocab", "allDomain"+suffix))
+        mappers.append(dumpData)
 
     '''利用词典将原始文本得reviewText转换成文id'''
     transOutputPath = os.path.join(outputPath, "transform")
     if not os.path.exists(transOutputPath):
         os.mkdir(transOutputPath)
 
+    voca, user, item = mappers
     voca = {word: i for i, word in voca.items()}
     user = {u: i for i, u in user.items()}
     item = {it: i for i, it in item.items()}
