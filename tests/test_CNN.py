@@ -24,18 +24,18 @@ class CNNTestSuite(unittest.TestCase):
         W = embedding_layer(vs, es)
         x_feature = embedding_lookup(icx, W)
         ocx, drop = cnn_text(sl, fs, nf, x_feature)
-        out = tf.expand_dims(ocx, 1)
-        prediction = factorization_machine(out)
+        cnn_out = tf.expand_dims(ocx, 1)
+        score_pred = factorization_machine(cnn_out)
         session = tf.Session(config=self.gpuConfig)
         init = tf.global_variables_initializer()
         session.run(init)
         print "Hello, World"
-
-        print session.run(prediction, feed_dict={icx: x, drop: 0.5})
+        print session.run(score_pred, feed_dict={icx: x, drop: 0.5})
         session.close()
 
     def tearDown(self):
         pass
+
 
 if __name__ == "__main__":
     unittest.main()
