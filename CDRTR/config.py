@@ -3,6 +3,8 @@ import os
 import logging
 import logging.config
 
+import tensorflow as tf
+
 dirname = os.getcwd()
 
 
@@ -60,6 +62,13 @@ class Config:
             "handlers": ["file", "console"]
         }
     }
+
+    @classmethod
+    def getGPUConfig(cls):
+        config = tf.ConfigProto()
+        for key, value in cls.TF_CONFIG.items():
+            setattr(config.gpu_options, key, value)
+        return config
 
     @classmethod
     def checkValid(cls):
