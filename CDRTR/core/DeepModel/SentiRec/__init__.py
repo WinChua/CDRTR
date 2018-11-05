@@ -71,3 +71,8 @@ class SentiRec(object):
                         )
         return pred
 
+    def outputVector(self, sess, batch):
+        sentc_cnn_opt = sess.run(self.sentc_cnn_out,
+                feed_dict={self.sentc_ipt: batch, self.drop:self.drop_value}
+                )
+        return sentc_cnn_opt
