@@ -3,6 +3,7 @@
 import json
 import re
 
+from ..utils import padding
 
 def clean_str(string):
     """
@@ -100,17 +101,27 @@ def transReview(filename, mapper, outputfilename, fields=None):
     with open(outputfilename, "w") as f:
         pass
 
-    for lines in _transReview(filename, mapper, fields):
+    lines = 0
+    total = 0
+    for jd in readJson(filename):
+        lines += 1
+        total += len(jd["reviewText"].split(" "))
+
+    avg = total / lines + 1
+    paddingWord = max(mapper["vocab"].values()) + 1
+
+    for lines in _transReview(filename, mapper, fields, avg, paddingWord):
         with open(outputfilename, "a") as f:
             f.write("\n".join(lines) + "\n")
 
 
-def _transReview(filename, mapper, fields=None):
+def _transReview(filename, mapper, fields=None, avg=100, paddingWord=90000):
     '''辅助函数,对文件写入做缓冲'''
     lines = []
     for jsonData in readJson(filename):
         reviewLine = clean_str(jsonData["reviewText"])
-        jsonData["reviewText"] = [mapper["vocab"][word] for word in reviewLine.split(" ")]
+        words = [mapper["vocab"][word] for word in reviewLine.split(" ")]
+        jsonData["reviewText"] = padding(words, avg, paddingWord)
         jsonData["reviewerID"] = mapper["user"][jsonData["reviewerID"]]
         jsonData["asin"] = mapper["item"][jsonData["asin"]]
         if fields is not None:

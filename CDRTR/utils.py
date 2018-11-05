@@ -6,6 +6,25 @@ import functools
 import logging
 
 
+def padding(sentc, size, pad):
+    '''对sentence进行padding操作
+
+    Parameters
+    ----------
+    sentc : list
+    size  : int
+    pad   : type of list[0]
+
+    Returns
+    -------
+    list : padding result
+    '''
+    if len(sentc) < size:
+        return sentc + [pad] * (size - len(sentc))
+    else:
+        return sentc[:size]
+
+
 def pkdump(obj, filename):
     '''pickle 包装函数'''
     with open(filename, "wb") as f:
