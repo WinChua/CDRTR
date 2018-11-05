@@ -34,6 +34,16 @@ class Config:
         "per_process_gpu_memory_fraction": 0.15,
         "allow_growth": True
     }
+
+    @classmethod
+    def setGpuOption(cls):
+        config = tf.ConfigProto()
+        logger = cls.getLogger()
+        for k, v in cls.TF_CONFIG.items():
+            setattr(config.gpu_options, k, v)
+            logger.info("GPU Option Setting: key--%s, value--%s", k, str(v))
+        return config
+
     LOG_CONFIG = {
         "version": 1,  # version字段是必须的，当前合法值只有1
         "formatters": {
