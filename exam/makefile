@@ -1,7 +1,7 @@
 export PYTHONPATH=..
 
 generatevoca:
-	python -m CDRTR.preprocess generatevoca --mode $(MODE) --fields asin,reviewerID,overall,reviewText --data_dir $(DATA)
+	python -m CDRTR.preprocess generatevoca --mode $(MODE) --fields asin,reviewerID,overall,reviewText,unixReviewTime --data_dir $(DATA)
 
 extractinfo:
 	python -m CDRTR.preprocess extractinfo --mode $(MODE)
