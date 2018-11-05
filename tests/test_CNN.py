@@ -11,7 +11,6 @@ class CNNTestSuite(unittest.TestCase):
     def setUp(self):
         self.gpuConfig = Config.getGPUConfig()
         tf.logging.set_verbosity(tf.logging.ERROR)
-        pass
 
     def test_all(self):
         x = np.random.randint(0, 9, size=(2, 10))
