@@ -1,8 +1,10 @@
+import os
 from collections import namedtuple
 
 from ..basic import cnn_text
 from ..basic import factorization_machine
 from ..basic import embedding_layer, embedding_lookup
+from CDRTR.utils import pkdump
 
 import tensorflow as tf
 
@@ -51,10 +53,16 @@ class SentiRec(object):
         return feed_dict
 
     def trainBatch(self, sess, batch):
-        _, loss, mae, rmse = sess.run(
+        try:
+            _, loss, mae, rmse = sess.run(
             [self.train_op, self.loss, self.mae, self.rmse],
             feed_dict=self._buildDict(batch)
             )
+        except :
+            pkdump(batch, "debug.pk")
+            raise
+        if not os.path.exists("debugnormal.pk"):
+            pkdump(batch, "debugnormal.pk")
         return loss, mae, rmse
 
     def getSummary(self, sess, batch):

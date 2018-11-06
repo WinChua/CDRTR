@@ -11,6 +11,7 @@ from . import SentiRec
 import click
 import tensorflow as tf
 
+testEpoch = 0
 
 @click.command()
 @click.option("--dir", help=u"训练数据文件路径")
@@ -46,19 +47,15 @@ def sentitrain(dir, domain, filter_size, filter_num, embd_size, epoches):
     sentirec = SentiRec(sentc_len, vocab_size, embd_size, filter_size, filter_num)
     sentirec.initSess(session)
 
-    train_writer = tf.summary.FileWriter('log/sentitrain/train', session.graph)
-    test_writer = tf.summary.FileWriter("log/sentitrain/test/", session.graph)
-    copies = 20
+    train_writer = tf.summary.FileWriter('log/sentitrain/%s/train' % domain, session.graph)
+    test_writer = tf.summary.FileWriter('log/sentitrain/%s/test' % domain, session.graph)
     minMae = 20
     minRmse = 20
+    minEpoch = epoches
 
-    batchSize = len(data.trainIndex) / copies
+    batchSize = 1000
 
-    testSize = len(data.testIndex)
-    testData = next(data.getTestBatch(testSize, itemgetter("reviewText", "overall")))
-    testSentcBatch = [d[0] for d in testData]
-    testRatingBatch = [d[1] for d in testData]
-    testBatch = {"sentc_ipt": testSentcBatch, "rating": testRatingBatch}
+    saver = tf.train.Saver(max_to_keep=1)
 
     for epoch in range(epoches):
         logger.info("Epoch %d" % epoch)
@@ -66,6 +63,7 @@ def sentitrain(dir, domain, filter_size, filter_num, embd_size, epoches):
         @recordTime
         def senticEpoch():
             loss, mae, rmse = 0, 0, 0
+            i = 0
             for batchData in data.getTrainBatch(batchSize, itemgetter("reviewText", "overall")):
                 sentcBatch = [d[0] for d in batchData]
                 ratingBatch = [d[1] for d in batchData]
@@ -75,16 +73,37 @@ def sentitrain(dir, domain, filter_size, filter_num, embd_size, epoches):
                 loss += l
                 mae += m
                 rmse += r
-            logger.info("minMae is %f, epoch mae is %f" % (minMae, mae/copies))
-            logger.info("minRmse is %f, epoch rmse is %f" % (minRmse, rmse/copies))
+                i += 1
+            logger.info("minMae is %f, epoch mae is %f" % (minMae, mae/i))
+            logger.info("minRmse is %f, epoch rmse is %f" % (minRmse, rmse/i))
             summary = sentirec.getSummary(session, batch)
             train_writer.add_summary(summary, epoch)
             if epoch % 50 == 0:
-                testSummary = sentirec.getSummary(session, testBatch)
-                test_writer.add_summary(testSummary, epoch)
-            return min((minMae, mae/copies)), min((minRmse, rmse/copies))
+                global testEpoch
+                for testBatch in data.getTestBatch(batchSize, itemgetter("reviewText", "overall")):
+                    testSB = [d[0] for d in testBatch]
+                    testRB = [d[1] for d in testBatch]
+                    batch = {"sentc_ipt": testSB, "rating": testRB}
+                    testSummary = sentirec.getSummary(session, batch)
+                    test_writer.add_summary(testSummary, testEpoch)
+                    testEpoch += 1
+            return mae/i, rmse/i
+            return min((minMae, mae/i)), min((minRmse, rmse/i))
 
-        minMae, minRmse = senticEpoch()
+        mae, rmse = senticEpoch()
+        if mae < minMae:
+            minMae = mae
+        if rmse < minRmse:
+            minRmse = rmse
+            minEpoch = epoch
+            modelSaveDir = os.path.join(dir, "sentiModel/%s/" % domain)
+            if not os.path.exists(modelSaveDir):
+                os.makedirs(modelSaveDir)
+
+            saver.save(session, os.path.join(modelSaveDir, "%s-model" % domain), global_step=epoch)
+
+    loader = tf.train.import_meta_graph(os.path.join(modelSaveDir, "%s-model-%d.meta" % (domain, minEpoch)))
+    loader.restore(session, tf.train.latest_checkpoint(modelSaveDir))
 
     sentiOutput = {}
     for batchData in data._getBatch(data.index, batchSize, itemgetter("reviewText", "reviewerID", "asin")):
@@ -95,5 +114,6 @@ def sentitrain(dir, domain, filter_size, filter_num, embd_size, epoches):
 
     outputPath = os.path.join(dir, "sentiRecOutput", domain+".pk")
     pkdump(sentiOutput, outputPath)
+
 
 sentitrain()
