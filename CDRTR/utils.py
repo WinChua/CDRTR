@@ -29,7 +29,7 @@ def padding(sentc, size, pad):
 def pkdump(obj, filename):
     '''pickle 包装函数'''
 
-    if not os.path.isdir(os.path.dirname(filename)):
+    if os.path.dirname(filename) != "" and not os.path.isdir(os.path.dirname(filename)):
         os.makedirs(os.path.dirname(filename))
 
     with open(filename, "wb") as f:
