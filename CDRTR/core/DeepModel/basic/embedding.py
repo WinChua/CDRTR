@@ -1,8 +1,13 @@
 import tensorflow as tf
+import logging
+
+defaultlogger = logging.getLogger(__name__)
 
 
 def embedding_lookup(input_x, embedding_W):
     '''Generate the responsed word vector for input_x'''
+    defaultlogger.debug("input_x shape is %s" % str(input_x.shape))
+    defaultlogger.debug("emdb_W shape is %s" % str(embedding_W.shape))
     with tf.name_scope("embedding_lookup"):
         embedded_chars = tf.nn.embedding_lookup(embedding_W, input_x)
         embedded_chars_expanded = tf.expand_dims(embedded_chars, -1)
