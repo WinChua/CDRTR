@@ -4,17 +4,17 @@ import tensorflow as tf
 
 class _encoder(object):
     def __init__(self, ipt, enc_shp, activator):
-    u'''
-    Parameters
-    ----------
-    ipt : Tensor
-        输入Tensor, shape为: [None, dims]
-    enc_shp : list of int
-        编/解码器每一层输出的dim
-    activator : tf.nn 下的激活函数
-        对于编码器, 默认使用 tf.nn.relu
-        对于解码器, 默认使用 tf.nn.sigmoid
-    '''
+        u'''
+        Parameters
+        ----------
+        ipt : Tensor
+            输入Tensor, shape为: [None, dims]
+        enc_shp : list of int
+            编/解码器每一层输出的dim
+        activator : tf.nn 下的激活函数
+            对于编码器, 默认使用 tf.nn.relu
+            对于解码器, 默认使用 tf.nn.sigmoid
+        '''
         self.input = ipt
         self.enc_lays = []
         self.enc_shp = enc_shp
