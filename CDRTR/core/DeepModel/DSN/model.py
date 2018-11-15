@@ -11,6 +11,7 @@ from CDRTR.utils import pkdump, pkload
 
 import tensorflow as tf
 
+
 class DSN:
     def __init__(self, ipt, domain_label,
                  source_enc_shp, target_enc_shp,
@@ -26,6 +27,11 @@ class DSN:
                         输出矩阵乘积的F范数进行衡量
             * 混淆损失: 共有编码器在不同领域的输出经过一个领域分类器,通过梯度反转
                         最大化分类误差
+
+        DSN在source domain的编码输出采用:
+            self.srcShrOut
+
+        该向量包含为共享编码器对source domain用户向量的编码输出
 
         Parameters
         ----------
@@ -46,7 +52,7 @@ class DSN:
         self.source_mask = tf.equal(domain_label, 1)
         self.target_mask = tf.equal(domain_label, 0)
 
-        print type(self.source_mask), type(self.target_mask)
+        # print type(self.source_mask), type(self.target_mask)
         # 利用掩码从input中过滤出分属于两个领域的输入
         self.src_ipt = tf.boolean_mask(self.input, self.source_mask)
         self.tgt_ipt = tf.boolean_mask(self.input, self.target_mask)
@@ -71,6 +77,7 @@ class DSN:
         self.tgtDec = Decoder(self.tgtHidden, target_dec_shp)
 
         # 重构损失
+        print (self.src_ipt.shape, self.srcDec.output.shape)
         self.srcRstLoss = tf.losses.mean_squared_error(self.src_ipt, self.srcDec.output)
         self.tgtRstLoss = tf.losses.mean_squared_error(self.tgt_ipt, self.tgtDec.output)
         self.RstLoss = self.srcRstLoss + self.tgtRstLoss
@@ -79,7 +86,7 @@ class DSN:
         self.domainProb = logitRegression(self.sharedEnc.output)
         # tf.stop_gradient使得参数的梯度不会在反向过程中传播,实现GRL梯度反转
         self.domainProb = -self.domainProb + tf.stop_gradient(self.domainProb + self.domainProb)
-        print self.domainProb.shape, self.domain_label.shape
+        # print self.domainProb.shape, self.domain_label.shape
         self.domainLoss = tf.losses.sigmoid_cross_entropy(
                 tf.expand_dims(self.domain_label, -1), self.domainProb)
 
