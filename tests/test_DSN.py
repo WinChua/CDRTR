@@ -6,6 +6,7 @@ import tensorflow as tf
 import numpy as np
 from CDRTR.core.DeepModel.DSN.model import DSN
 
+
 class DSNTestSuite(unittest.TestCase):
     def setUp(self):
         self.gpuConfig = Config.getGPUConfig()
@@ -34,7 +35,7 @@ class DSNTestSuite(unittest.TestCase):
                 axis=1)
         print tf_rating.shape, tf_pred_rating.shape
         loss = tf.losses.mean_squared_error(tf_rating, tf_pred_rating)
-        sess = tf.Session()
+        sess = tf.Session(config=self.gpuConfig)
         init = tf.global_variables_initializer()
         sess.run(init)
         print sess.run(loss, feed_dict={
