@@ -11,6 +11,9 @@ from CDRTR.utils import pkdump, pkload
 
 import tensorflow as tf
 
+import logging
+defaultlogger = logging.getLogger(__name__)
+
 
 class DSN:
     def __init__(self, ipt, domain_label,
@@ -52,7 +55,8 @@ class DSN:
         self.source_mask = tf.equal(domain_label, 1)
         self.target_mask = tf.equal(domain_label, 0)
 
-        # print type(self.source_mask), type(self.target_mask)
+        defaultlogger.debug("The type of source_mask and target_mask is %s, %s",
+                type(self.source_mask), type(self.target_mask))
         # 利用掩码从input中过滤出分属于两个领域的输入
         self.src_ipt = tf.boolean_mask(self.input, self.source_mask)
         self.tgt_ipt = tf.boolean_mask(self.input, self.target_mask)
@@ -77,7 +81,9 @@ class DSN:
         self.tgtDec = Decoder(self.tgtHidden, target_dec_shp)
 
         # 重构损失
-        print (self.src_ipt.shape, self.srcDec.output.shape)
+        defaultlogger.debug("The shape of src_ipt and srcDec.output is %s, %s",
+                self.src_ipt.shape, self.srcDec.output.shape)
+
         self.srcRstLoss = tf.losses.mean_squared_error(self.src_ipt, self.srcDec.output)
         self.tgtRstLoss = tf.losses.mean_squared_error(self.tgt_ipt, self.tgtDec.output)
         self.RstLoss = self.srcRstLoss + self.tgtRstLoss
@@ -85,8 +91,11 @@ class DSN:
         # 共享编码器输出不同领域相似损失
         self.domainProb = logitRegression(self.sharedEnc.output)
         # tf.stop_gradient使得参数的梯度不会在反向过程中传播,实现GRL梯度反转
+        # 反向传播过程中只有-self.domainProb向后传播, 传递为- d{domainPorb}/d{x}
+        # 向前传播的值为 -domainProb + domainProb + domainProb = domainProb
         self.domainProb = -self.domainProb + tf.stop_gradient(self.domainProb + self.domainProb)
-        # print self.domainProb.shape, self.domain_label.shape
+        defaultlogger.debug("The shape of domainProb and domain_label is %s, %s",
+                self.domainProb.shape, self.domain_label.shape)
         self.domainLoss = tf.losses.sigmoid_cross_entropy(
                 tf.expand_dims(self.domain_label, -1), self.domainProb)
 
