@@ -4,7 +4,7 @@ import numpy as np
 from ..preprocess.utils import readJson
 
 
-class Dataset:
+class SentiRecDataset:
     def __init__(self, filename, fields=None, trainTestFrac=0.7):
         '''
         Parameters

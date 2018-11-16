@@ -1,1 +1,1 @@
-from . import Dataset
+from . import SentiRecDataset

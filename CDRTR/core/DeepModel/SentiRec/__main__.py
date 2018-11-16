@@ -30,7 +30,7 @@ def sentitrain(dir, domain, filter_size, filter_num, embd_size, epoches):
     data = []
     logger.info(transPath+"/*%s*" % domain)
     for d in glob.glob(transPath+"/*%s*" % domain):
-        data.append(Dataset.Dataset(d))
+        data.append(Dataset.SentiRecDataset(d))
 
     if data == []:
         logger.error("The data of %s is not in %s", domain, transPath)
