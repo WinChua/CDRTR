@@ -1,5 +1,4 @@
 # coding=utf8
-import os
 
 from ..basic import cnn_text
 from ..basic import factorization_machine
