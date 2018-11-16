@@ -4,10 +4,15 @@ import os
 import sys
 import click
 
+from itertools import chain
+from operator import itemgetter
+from glob import glob
 from .utils import buildVoca, transReview
+from .utils import readJson
 from ..utils import pkdump, recordTime
 from .. import config
 from .cold import generateColdUser
+from .sentiOutputMergeUserItem import mergeUserItem
 
 
 @click.group()
@@ -130,7 +135,7 @@ def generateVoca(mode, sub_output_path, fields, data_dir):
     ["DEBUG", "DEFAULT", "DEVELOP"]))
 @click.option("--data_dir", default="data", help=u"数据处理路径")
 def extractInfo(mode, data_dir):
-    '''从转换后的用户数据提取信息'''
+    u'''从转换后的用户数据提取信息'''
     runConfig = config.configs[mode]("extractInfo_"+data_dir)
     runConfig.setConsoleLogLevel("DEBUG")
     runConfig.setSourcePath(data_dir)
@@ -138,6 +143,38 @@ def extractInfo(mode, data_dir):
     logger = runConfig.getLogger()
     logger.info("the command line is %s", " ".join(sys.argv))
 
+
+@cli.command()
+@click.option("--mode", type=click.Choice(["DEBUG", "DEFAULT", "DEVELOP"]))
+@click.option("--data_dir", default="data", help=u"数据路径")
+@click.option("--domain", default="*", help=u"待处理领域, 逗号分隔")
+@click.option("--output_dir", default="uirepresent", help=u"输出路径")
+def mergeUI(mode, data_dir, domain, output_dir):
+    runConfig = config.configs[mode]("mergeUI_"+data_dir)
+    runConfig.setConsoleLogLevel("DEBUG")
+    logger = runConfig.getLogger()
+    pattern = "%s/preprocess/sentiRecOutput/%s"
+
+    patterns = [glob(pattern % (data_dir, d)) for d in domain.split(",")]
+
+    out_dir = "%s/preprocess/%s" % (data_dir, output_dir)
+    for fn in chain(*patterns):
+        logger.debug("Dealing with %s", fn)
+        user, item = mergeUserItem(fn)
+        bn = os.path.basename(fn)
+        pkdump(user, os.path.join(out_dir, "user_"+bn))
+        pkdump(item, os.path.join(out_dir, "item_"+bn))
+        logger.debug("Dealing end  %s", fn)
+
+    rating = "%s/preprocess/transform/*.json"
+    key_getter = itemgetter("reviewerID", "asin")
+    value_getter = itemgetter("overall")
+    for fn in glob(rating % data_dir):
+        data = {key_getter(d): value_getter(d) for d in readJson(fn)}
+        out_name = os.path.join(out_dir,
+                                os.path.basename(os.path.splitext(fn)[0])+".pk")
+        out_name = out_name.replace("reviews", "rating")
+        pkdump(data, out_name)
 
 
 cli()
