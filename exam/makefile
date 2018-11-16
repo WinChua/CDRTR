@@ -14,3 +14,6 @@ preprocess: generatevoca extractinfo
 # make sentitrain DATA=data DOMAIN=Auto
 sentitrain:
 	python -m CDRTR.core.DeepModel.SentiRec --dir $(DATA)/preprocess --domain $(DOMAIN) --filter_size 3,5,7,11 --epoches 400
+
+mergeUI:
+	python -m CDRTR.preprocess mergeui --mode $(MODE) --data_dir $(DATA)
