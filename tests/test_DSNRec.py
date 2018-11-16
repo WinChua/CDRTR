@@ -56,6 +56,6 @@ class DSNRecTestSuite(unittest.TestCase):
                 tf_src_label: src_label,
                 tf_tgt_label: tgt_label,
                 })
-            print "epoch of ", epoch , "loss is ", loss
+            print "epoch of ", epoch, "loss is ", loss
 
 
