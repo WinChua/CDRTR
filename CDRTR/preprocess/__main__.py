@@ -109,6 +109,9 @@ def generateVoca(mode, sub_output_path, fields, data_dir):
         files = [os.path.join(inputPath, f) for f in os.listdir(inputPath)]
         SOURCE, TARGET = files[:2]
         ColdSU, ColdTU, OverLapU = generateColdUser(SOURCE, TARGET)
+        ColdSU = [user[u] for u in ColdSU]
+        ColdTU = [user[u] for u in ColdTU]
+        OverLapU = [user[u] for u in OverLapU]
         logger.info("cold user count in %s is %d",
                     os.path.basename(SOURCE),
                     len(ColdSU))
@@ -168,12 +171,12 @@ def mergeUI(mode, data_dir, domain, output_dir):
 
     rating = "%s/preprocess/transform/*.json"
     key_getter = itemgetter("reviewerID", "asin")
-    value_getter = itemgetter("overall")
+    value_getter = itemgetter("overall", "unixReviewTime")
     for fn in glob(rating % data_dir):
         data = {key_getter(d): value_getter(d) for d in readJson(fn)}
         out_name = os.path.join(out_dir,
                                 os.path.basename(os.path.splitext(fn)[0])+".pk")
-        out_name = out_name.replace("reviews", "rating")
+        out_name = out_name.replace("reviews", "rating_time")
         pkdump(data, out_name)
 
 
