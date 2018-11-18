@@ -35,8 +35,10 @@ def generateColdUser(sourceDomain, targetDomain):
     uS = uiS.groupby("user").count()
     uT = uiT.groupby("user").count()
     uBoth = pd.concat([uS, uT], axis=1).fillna(0)
+    # coldUserSource 的user 来自于 Target domain, 在Source Domain中记录数量为0
     coldUserSource = uBoth.query("sourceItem == 0")
+    # coldUserTarget 的user 来自于 Source Domain, 在Target Domain 中记录数量为0
     coldUserTarget = uBoth.query("targetItem == 0")
     overlapUser = uBoth.query("sourceItem != 0 and targetItem != 0")
-    return list(coldUserSource.index), list(coldUserTarget.index), list(overlapUser.index)
+    return list(coldUserTarget.index), list(coldUserSource.index), list(overlapUser.index)
 
