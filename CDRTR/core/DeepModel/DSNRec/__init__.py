@@ -81,3 +81,59 @@ class DSNRec:
         batchData = self._buildBatch(batch)
         _, loss = sess.run([self.train_op, self.totalLoss], feed_dict=batchData)
         return loss
+
+    def evaluate(self, sess, testBatches, target=None):
+        u'''用测试集对target(tf的变量)进行评估
+
+        self.ratingLoss = tf.losses.mean_squared_error(
+            self.src_pred, self.tf_user_src_rating)
+
+        Parameters
+        ----------
+        sess: tf.Session
+            用于运行计算的session
+        testBatches: generator or list of batch
+            使用DSNRecDataset的generateTestBatch生成生成器
+            每一次next将会生成如下字典结构:
+            {"src": {"user": np.array, "item": np.array, "rating": np.array},
+             "tgt": {"user": np.array, "item": np.array, "rating": np.array}}
+        target: None or tf.Tensor
+            sess.run方法的target, 默认值为None, 将会计算预测的评分与对应mse
+            如为其他值,将会返回各个test batch对应的计算值的list
+
+        Returns
+        -------
+        pred, mse: 每一份测试batch对应的预测评分以及整份test数据的mse
+            如果target为None, 则返回这些数据
+        results: 每一份测试batch对应的target参数中的计算值
+            如果target不为None, 则返回该数据
+        '''
+        run_tar = [self.src_pred, self.ratingLoss] if target is None else target
+        mses = []
+        pred = []
+        results = []
+        for batchData in testBatches:
+            batch = {
+                "item_ipt": batchData["src"]["item"],
+                "user_src_ipt": batchData["src"]["user"],
+                "user_src_rating": batchData["src"]["rating"],
+                "user_tgt_ipt": batchData["tgt"]["user"],
+                }
+            batchSize = len(batch["user_src_rating"])
+            result = sess.run(run_tar,
+                              feed_dict=self._buildBatch(batch))
+            if target is None:
+                rpred, rloss = result
+                pred.append(rpred)
+                mses.append((batchSize, rloss))
+            else:
+                results.append(result)
+        if target is None:
+            size, loss = 0, 0
+            for bs, rl in mses:
+                size += bs
+                loss += rl * bs
+            mse = loss / size
+            return pred, mse
+        else:
+            return results
