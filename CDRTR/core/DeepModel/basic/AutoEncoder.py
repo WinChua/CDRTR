@@ -33,7 +33,7 @@ class Decoder(_encoder):
 
 class Encoder(_encoder):
     def __init__(self, ipt, enc_shp):
-        super(Encoder, self).__init__(ipt, enc_shp, tf.nn.relu)
+        super(Encoder, self).__init__(ipt, enc_shp, tf.nn.sigmoid)
 
 
 class AutoEncDec:
