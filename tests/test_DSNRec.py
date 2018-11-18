@@ -5,6 +5,7 @@ import unittest
 import tensorflow as tf
 import numpy as np
 from CDRTR.core.DeepModel.DSNRec import DSNRec
+from CDRTR.dataset import DSNRecDataset
 
 
 class DSNRecTestSuite(unittest.TestCase):
@@ -14,13 +15,13 @@ class DSNRecTestSuite(unittest.TestCase):
 
     def test_DSNRec(self):
         record_num = 100
-        item_ipt_shp = 66
+        item_ipt_shp = 32
         item_ipt = np.random.randint(
             0, 9, size=record_num * item_ipt_shp).reshape((record_num, item_ipt_shp))
         item_enc_shp = [55, 32]
         item_dec_shp = [32, 55, item_ipt_shp]
 
-        user_ipt_shp = 100
+        user_ipt_shp = 32
         usrc_ipt = np.random.randint(
             0, 9, size=record_num * user_ipt_shp).reshape((record_num, user_ipt_shp))
         utgt_ipt = np.random.randint(
@@ -41,6 +42,32 @@ class DSNRecTestSuite(unittest.TestCase):
                 "user_tgt_ipt": utgt_ipt
                 }
         dsn_rec.initSess(sess)
+        dataset = DSNRecDataset.DSNRecDataset(
+                "exam/data/preprocess/uirepresent",
+                "exam/data/preprocess/cold",
+                "Auto", "Musi")
+        trainBatchGen = dataset.generateBatch("user", 500)
         for epoch in range(50):
-            loss = dsn_rec.trainBatch(batch, sess)
-            print "epoch of", epoch, "loss is", loss
+            for i in range(100):
+                batchData = next(trainBatchGen)
+                batch = {
+                    "item_ipt": batchData["src"]["item"],
+                    "user_src_ipt": batchData["src"]["user"],
+                    "user_src_rating": batchData["src"]["rating"],
+                    "user_tgt_ipt": batchData["tgt"]["user"]
+                    }
+                for v in batch.values():
+                    print v.shape
+                loss = dsn_rec.trainBatch(batch, sess)
+                print "loss of (i, epoch):(%d, %d) is %f" % (i, epoch, loss)
+
+    def test_DSNRecDataset(self):
+        dataset = DSNRecDataset.DSNRecDataset(
+            "exam/data/preprocess/uirepresent",
+            "exam/data/preprocess/cold",
+            "Auto", "Musi")
+        trainBatchGen = dataset.generateBatch("user", 10)
+        for i in range(10):
+            batch = next(trainBatchGen)
+            print batch
+
