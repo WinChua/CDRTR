@@ -2,7 +2,7 @@
 import os
 from collections import defaultdict
 from collections import OrderedDict
-from itertools import izip, cycle
+from itertools import izip, cycle, islice
 import numpy as np
 from glob import glob
 from ..utils import pkload, pkdump
@@ -130,25 +130,38 @@ class DSNRecDataset:
         test = [(ui, rating[ui]) for ui in test]
         return train, test
 
-    def generateBatch(self, type, batchSize):
+    def generateTrainBatch(self, type, batchSize):
         u'''
         type in ['user', 'time']
         default = 'user'
         '''
         data = self.timesplit if type == 'time' else self.usersplit
-        self.srcTrainBatch = int(len(data["src"]["train"])/batchSize)
-        self.tgtTrainBatch = int(len(data["tgt"]["train"])/batchSize)
-        for batch in self.__generateBatch(batchSize, data):
-            yield batch
+        return self._generateBatch(data, batchSize, "train")
 
-    def __generateBatch(self, batchSize, data):
+    def generateTestBatch(self, type, batchSize):
+        data = self.timesplit if type == 'time' else self.usersplit
+        return islice(self._generateBatch(data, batchSize, "test"),
+                      self.srctestbatch)
+
+    def _generateBatch(self, data, batchSize, train_or_test):
+
+        setattr(self, "src"+train_or_test+"batch",
+                int(len(data["src"][train_or_test])/batchSize)+1)
+        setattr(self, "tgt"+train_or_test+"batch",
+                int(len(data["tgt"][train_or_test])/batchSize)+1)
+        return self.__generateBatch(batchSize, data, train_or_test)
+
+    def __generateBatch(self, batchSize, data, train_or_test):
         u'''
         Parameters
         ----------
+        batchSize: int
         data: dict
             {"src": {"train": dataset, "test": dataset},
              "tgt": {"train": dataset, "test": dataset}}
             dataset: [((userid, itemid), rating)]
+        train_or_test: str
+            belong in ['train', 'test']
 
         Yield
         -----
@@ -158,12 +171,12 @@ class DSNRecDataset:
 
         def takenBatch(data):
             total = len(data)
-            for i in range(int(total/batchSize)):
+            for i in range(int(total/batchSize)+1):
                 yield data[i*batchSize: (i+1)*batchSize]
 
         for src, tgt in izip(
-                cycle(takenBatch(data["src"]["train"])),
-                cycle(takenBatch(data["tgt"]["train"]))):
+                cycle(takenBatch(data["src"][train_or_test])),
+                cycle(takenBatch(data["tgt"][train_or_test]))):
             srcu_vec, srci_vec = [], []
             src_rating = []
             for (u, i), r in src:
