@@ -1,12 +1,14 @@
 # coding=utf8
 import os
 
-from ..basic import cnn_text
-from ..basic import factorization_machine
-from ..basic import embedding_lookup, embedding_layer
+# from ..basic import cnn_text
+# from ..basic import factorization_machine
+# from ..basic import embedding_lookup, embedding_layer
 from ..basic import Encoder, Decoder
 from CDRTR.utils import pkdump, pkload
 
+import logging
+defaultlogger = logging.getLogger(__name__)
 import tensorflow as tf
 
 
