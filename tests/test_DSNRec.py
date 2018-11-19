@@ -44,13 +44,14 @@ class DSNRecTestSuite(unittest.TestCase):
                 "user_tgt_ipt": utgt_ipt
                 }
         dsn_rec.initSess(sess)
+        train_writer = tf.summary.FileWriter('log/DSNRec/Musi_Auto/train', sess.graph)
         dataset = DSNRecDataset.DSNRecDataset(
                 "exam/data/preprocess/uirepresent",
                 "exam/data/preprocess/cold",
                 "Musi", "Auto")
         trainBatchGen = dataset.generateTrainBatch("user", 500)
         preds = []
-        for epoch in range(500):
+        for epoch in range(5):
             for i in range(100):
                 batchData = next(trainBatchGen)
                 batch = {
