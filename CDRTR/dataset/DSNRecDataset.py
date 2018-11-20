@@ -35,6 +35,9 @@ class DSNRecDataset:
         self.timesplit = self.__getTimeSplitTrainTest()
         self.usersplit = self.__getUserSplitTrainTest()
 
+    def getUIShp(self):
+        return self.src_user.values()[0].shape[0], self.src_item.values()[0].shape[0]
+
     def __getUserSplitTrainTest(self):
         for fn in os.listdir(self.cold_dir):
             if self.src_domain in fn:

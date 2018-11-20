@@ -33,6 +33,13 @@ class DSNRecTestSuite(unittest.TestCase):
         user_enc_shp = [25, 16, 9]
         user_dec_shp = [9, 16, 25, user_ipt_shp]
         user_shr_shp = [25, 16, 9]
+
+        dataset = DSNRecDataset.DSNRecDataset(
+                "exam/data/preprocess/uirepresent",
+                "exam/data/preprocess/cold",
+                "Auto", "Musi")
+
+        assert user_ipt_shp, item_ipt_shp == dataset.getUIShp()
         dsn_rec = DSNRec(
             item_ipt_shp, item_enc_shp, item_dec_shp,
             user_ipt_shp, user_enc_shp, user_dec_shp, user_shr_shp)
@@ -45,10 +52,6 @@ class DSNRecTestSuite(unittest.TestCase):
                 }
         dsn_rec.initSess(sess)
         train_writer = tf.summary.FileWriter('log/DSNRec/Musi_Auto/train', sess.graph)
-        dataset = DSNRecDataset.DSNRecDataset(
-                "exam/data/preprocess/uirepresent",
-                "exam/data/preprocess/cold",
-                "Musi", "Auto")
         trainBatchGen = dataset.generateTrainBatch("user", 500)
         preds = []
         for epoch in range(5):
@@ -66,6 +69,8 @@ class DSNRecTestSuite(unittest.TestCase):
                # print "loss of (i, epoch):(%d, %d) is %f" % (i, epoch, loss)
             # pdb.set_trace()
 
+            summary = dsn_rec.getSummary(sess, batch)
+            train_writer.add_summary(summary, epoch)
             pred, testloss = dsn_rec.evaluate(sess, dataset.generateTestBatch("user", 1000))
             print "the loss of test dataset is", testloss
             preds.append((epoch, pred, testloss))

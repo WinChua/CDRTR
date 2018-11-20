@@ -69,12 +69,27 @@ class DSNRec:
         with tf.variable_scope("DSNLoss"):
             self.itemLoss = tf.losses.mean_squared_error(self.tf_item_ipt,
                                                          self.itemDec.output)
-            self.totalLoss = self.ratingLoss + self.dsn.loss
+            self.totalLoss = self.ratingLoss + self.dsn.loss + self.itemLoss
 
+        tf.summary.scalar("totalLoss", self.totalLoss)
+        tf.summary.scalar("itemLoss", self.itemLoss)
+        tf.summary.scalar("ratingMse", self.ratingLoss)
+        tf.summary.scalar("dsn.srcRstLoss", self.dsn.srcRstLoss)
+        tf.summary.scalar("dsn.tgtRstLoss", self.dsn.tgtRstLoss)
+        tf.summary.scalar("dsn.RstLoss", self.dsn.RstLoss)
+        tf.summary.scalar("dsn.domainLoss", self.dsn.domainLoss)
+        tf.summary.scalar("dsn.srcDiffLoss", self.dsn.srcDiffLoss)
+        tf.summary.scalar("dsn.tgtDiffLoss", self.dsn.tgtDiffLoss)
+        tf.summary.scalar("dsn.DiffLoss", self.dsn.DiffLoss)
+        self.merged = tf.summary.merge_all()
         self.optimizer = tf.train.AdamOptimizer(0.001)
         self.train_op = self.optimizer.minimize(self.totalLoss)
 
         self.init = tf.global_variables_initializer()
+
+    def getSummary(self, sess, batch):
+        batchData = self._buildBatch(batch)
+        return sess.run(self.merged, feed_dict=batchData)
 
     def initSess(self, sess):
         sess.run(self.init)
