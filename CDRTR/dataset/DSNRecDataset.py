@@ -174,13 +174,21 @@ class DSNRecDataset:
             for i in range(int(total/batchSize)+1):
                 yield data[i*batchSize: (i+1)*batchSize]
 
+        # 训练过程中, 用源领域用户进行训练, 测试过程用tgt领域用户的特征预测
+        if train_or_test == "train":
+            suser, tuser = self.src_user, self.tgt_user
+        elif train_or_test == "test":
+            suser, tuser = self.tgt_user, self.src_user
+        else:
+            raise Exception("train_or_test should in ['train', 'test']")
+
         for src, tgt in izip(
                 cycle(takenBatch(data["src"][train_or_test])),
                 cycle(takenBatch(data["tgt"][train_or_test]))):
             srcu_vec, srci_vec = [], []
             src_rating = []
             for (u, i), r in src:
-                srcu_vec.append(self.src_user[u])
+                srcu_vec.append(suser[u])
                 srci_vec.append(self.src_item[i])
                 src_rating.append(r)
 
@@ -191,7 +199,7 @@ class DSNRecDataset:
             tgtu_vec, tgti_vec = [], []
             tgt_rating = []
             for (u, i), r in tgt:
-                tgtu_vec.append(self.tgt_user[u])
+                tgtu_vec.append(tuser[u])
                 tgti_vec.append(self.tgt_item[i])
                 tgt_rating.append(r)
 
