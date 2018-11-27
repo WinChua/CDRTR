@@ -17,3 +17,6 @@ sentitrain:
 
 mergeUI:
 	python -m CDRTR.preprocess mergeui --mode $(MODE) --data_dir $(DATA)
+
+DSNRec:
+	python -m CDRTR.core.DeepModel.DSNRec --data_dir $(DATA) --src_domain $(SRCDO) --tgt_domain $(TGTDO) --epoches $(EPOCH) --mode $(MODE)
