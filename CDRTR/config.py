@@ -31,7 +31,7 @@ class Config:
             cls.PREPROCESS_CONFIG[k] = cls.PREPROCESS_CONFIG[k].format(data=path)
 
     TF_CONFIG = {
-        "per_process_gpu_memory_fraction": 0.15,
+        "per_process_gpu_memory_fraction": 0.3,
         "allow_growth": True
     }
 
