@@ -49,7 +49,11 @@ def main(data_dir, src_domain, tgt_domain, epoches, mode):
         _, test_rmse = dsn_rec.evaluate(sess, dataset.generateTestBatch("user", 1000))
         logger.info("The test mse of epoch %d is %f.", epoch, test_rmse)
         test_mses.append(test_rmse)
-    pkdump(test_mses, "log/DSNRec/%s_%s/test_mses.pk" % (src_domain, tgt_domain))
+
+    if "MultiCross" in data_dir:
+        pkdump(test_mses, "log/DSNRec/MultiCross/%s_%s/test_mses.pk" % (src_domain, tgt_domain))
+    else:
+        pkdump(test_mses, "log/DSNRec/%s_%s/test_mses.pk" % (src_domain, tgt_domain))
 
 
 main()

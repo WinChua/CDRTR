@@ -15,7 +15,7 @@ def get_rmse(result_file):
 Usage = '''
 <Usage %s test_mse.pk_path ...>
 e.g:
-    python show_result.py `find . -name "test*.pk"`'''
+    python show_result.py `find . -name "test*.pk" | grep -v MultiCross`'''
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

@@ -53,7 +53,10 @@ def main(datadir):
 Usage = '''<Usage %s data1 data2 data3 ...>
 
 e.g:
-    python show_user_record_count.py `ls -F | grep / | grep -v log | cut -d/ -f1`'''
+    for pair-cross-domain:
+    python show_user_record_count.py `ls -F | grep / | grep -v log | grep -v MultiCross | cut -d/ -f1`
+    for multicross-domain:
+    python show_user_record_count.py ``ls MultiCross/* -d`'''
 
 if __name__ == "__main__":
     if len(sys.argv) <= 1:
