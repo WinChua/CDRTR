@@ -9,7 +9,7 @@ from operator import itemgetter
 from glob import glob
 from .utils import buildVoca, transReview
 from .utils import readJson
-from ..utils import pkdump, recordTime
+from ..utils import pkdump, recordTime, pkload
 from .. import config
 from .cold import generateColdUser
 from .sentiOutputMergeUserItem import mergeUserItem
@@ -178,6 +178,53 @@ def mergeUI(mode, data_dir, domain, output_dir):
                                 os.path.basename(os.path.splitext(fn)[0])+".pk")
         out_name = out_name.replace("reviews", "rating_time")
         pkdump(data, out_name)
+
+
+@cli.command()
+@click.option("--mode", type=click.Choice(["DEBUG", "DEFAULT", "DEVELOP"]))
+@click.option("--data_dir", default="data", help=u"数据路径")
+@click.option("--fields", default="*", help=u"逗号分割, 指定输出字段")
+@click.option("--output_dir", default="csv_format", help=u"输出路径")
+def csv_format(mode, data_dir, fields, output_dir):
+    runConfig = config.configs[mode]("csv_format_"+data_dir)
+    runConfig.setConsoleLogLevel("DEBUG")
+
+    if fields == "*":
+        fields = "reviewerID,asin,overall"
+
+    getter = itemgetter(*fields.split(","))
+
+    transform = "%s/preprocess/transform" % data_dir
+    output_dir = "%s/preprocess/%s" % (data_dir, output_dir)
+
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    cold_dir = "%s/preprocess/cold/overlapUser.pk" % data_dir
+    cold_user = pkload(cold_dir)
+
+    for fn in os.listdir(transform):
+        @recordTime
+        def transCSV(fn):
+            inf = os.path.join(transform, fn)
+            ext = os.path.splitext(fn)[-1]
+            out_train = os.path.join(output_dir, fn).replace(ext, "_train.csv")
+            out_test = os.path.join(output_dir, fn).replace(ext, "_test.csv")
+            data = [getter(d) for d in readJson(inf)]
+            train, test = [], []
+            for d in data:
+                if d[0] in cold_user:
+                    test.append(",".join(map(str, d)))
+                else:
+                    train.append(",".join(map(str, d)))
+
+            with open(out_train, "w") as f:
+                f.write("\n".join(train))
+
+            with open(out_test, "w") as f:
+                f.write("\n".join(test))
+
+        transCSV(fn)
 
 
 cli()
