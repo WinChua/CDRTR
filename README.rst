@@ -6,7 +6,7 @@ CrossDomainReviewTextRecommendation
 关注于评分预测问题
 
 * 利用用户对商品的评论文本进行建模, 获取用户向量以及商品向量表示
-* 利用DSN等Domain Adaptation方法构建用户在源领域与目标领域上的关联
+* 利用DSN [#]_ 等Domain Adaptation方法构建用户在源领域与目标领域上的关联
 * 利用待推荐用户在目标领域上的向量为用户在源领域上进行推荐
 
 所有的实验基于Amazon公开的数据集
@@ -86,7 +86,7 @@ makefile中设置了多个任务, 包括:
 
 2. transCSV: 将json格式的原数据处理为csv格式, 方便使用MyMediaLite进行baseline实验
 
-3. sentitrain: 对两个领域用户评论评分数据进行sentiRec训练, 获取CNN层输出作为评论句子的向量表示
+3. sentitrain: 对两个领域用户评论评分数据进行sentiRec [#]_ 训练, 获取CNN层输出作为评论句子的向量表示
 
 4. mergeUI: 将sentitrain输出的评论文本聚合为用户, item的向量表示
 
@@ -187,6 +187,13 @@ Tensorboard查看模型结构
 
 
 .. image:: https://raw.githubusercontent.com/WinChua/CDRTR/master/docs/source/_static/model.bmp
+
+参考引用
+--------
+
+.. [#] Bousmalis, K., Trigeorgis, G., Silberman, N., Krishnan, D., & Erhan, D. (2016). Domain SeparationNetworks, (Nips). Retrieved from http://arxiv.org/abs/1608.06019
+.. [#] Hyun, D., Park, C., Yang, M.-C., Song, I., Lee, J.-T., & Yu, H. (2018). Review Sentiment-Guided Scalable DeepRecom-mender System. Ann SIGIR, 18, 965–968. https://doi.org/10.1145/3209978.3210111
+
 
 
 ✨🍰✨
