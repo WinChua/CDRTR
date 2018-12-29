@@ -24,7 +24,10 @@ def main(data_dir, src_domain, tgt_domain, epoches, mode):
         os.path.join(pre_dir, "uirepresent"), os.path.join(pre_dir, "cold"),
         src_domain, tgt_domain)
     trainBatchGen = dataset.generateTrainBatch("user", 1000)
-    item_ipt_shp, user_ipt_shp = dataset.getUIShp()
+    # hmm, 这里的item_ipt_shp跟user_ipt_shp其实相等.
+    # 因为, 不论是item还是user, 各个的向量表示都是从
+    # 相同维度的句子向量表述变换而来.
+    user_ipt_shp, item_ipt_shp = dataset.getUIShp()
     enc_shp = [int(user_ipt_shp*r) for r in [0.7, 0.5, 0.3]]
     dec_shp = [int(item_ipt_shp*r) for r in [0.5, 0.7, 1]]
     dsn_rec = DSNRec(
