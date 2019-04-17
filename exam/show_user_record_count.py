@@ -66,13 +66,13 @@ if __name__ == "__main__":
     from prettytable import PrettyTable
     pool = Pool(10)
     results = pool.map(main, sys.argv[1:])
-    usertable = PrettyTable(["domains", "srcUserCount", "tgtUserCount", "overlapCount"])
+    usertable = PrettyTable(["domains", "srcUserCount", "tgtUserCount", "overlapCount", "srcOverlapRate", "tgtOverlapRate"])
     recdtable = PrettyTable(["domains", "srcURcount", "srcOverRcount", "tgtURcount", "tgtOverRcount"])
     for res in results:
         src, tgt = res["Domain"]
         u = res["User"]
         r = res["Record"]
-        usertable.add_row([src+"/"+tgt, u[src], u[tgt], u["overlap"]])
+        usertable.add_row([src+"/"+tgt, u[src], u[tgt], u["overlap"], float(u["overlap"])/float(u[src]), float(u["overlap"])/float(u[tgt])])
         recdtable.add_row([src+"/"+tgt, r["srcUC"], r["srcOUC"], r["tgtUC"], r["tgtOUC"]])
 
     print(usertable)

@@ -31,7 +31,7 @@ class Config:
             cls.PREPROCESS_CONFIG[k] = cls.PREPROCESS_CONFIG[k].format(data=path)
 
     TF_CONFIG = {
-        "per_process_gpu_memory_fraction": 0.3,
+        "per_process_gpu_memory_fraction": 0.5,
         "allow_growth": True
     }
 
@@ -96,6 +96,9 @@ class Config:
 
     @classmethod
     def setLogFile(cls, filename):
+        if not os.path.isdir(os.path.dirname(filename)):
+            os.makedirs(os.path.dirname(filename))
+
         cls.LOG_CONFIG["handlers"]["file"]["filename"] = filename
 
     @classmethod
@@ -116,7 +119,10 @@ class DebugConfig(Config):
 
     @classmethod
     def setGetConfig(cls, filename):
-        cls.setLogFile(os.path.join(dirname, "log", "debug_%s.log" % filename))
+        dir = os.path.dirname(filename)
+        fn = os.path.basename(filename)
+        dir = os.path.join(dirname, "log", dir)
+        cls.setLogFile(os.path.join(dir, "debug_%s.log" % fn))
         return cls
 
 
@@ -126,7 +132,10 @@ class DevelopConfig(Config):
 
     @classmethod
     def setGetConfig(cls, filename):
-        cls.setLogFile(os.path.join(dirname, "log", "develop_%s.log" % filename))
+        dir = os.path.dirname(filename)
+        fn = os.path.basename(filename)
+        dir = os.path.join(dirname, "log", dir)
+        cls.setLogFile(os.path.join(dir, "develop_%s.log" % fn))
         cls.setLogLevel("INFO")
         return cls
 

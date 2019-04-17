@@ -1,5 +1,6 @@
 # coding=utf8
 import os
+import random
 from collections import defaultdict
 from collections import OrderedDict
 from itertools import izip, cycle, islice
@@ -11,9 +12,11 @@ from ..preprocess.utils import readJson
 
 class DSNRecDataset:
     def __init__(self, input_dir, cold_dir,
-                 src_domain, tgt_domain, output_dir=None):
+                 src_domain, tgt_domain, output_dir=None,
+                 overlap_rate=1.0):
         # input_dir e.g: exam/data/preprocess/uirepresent
         # cold_dir e.g: exam/data/preprocess/cold
+        self.overlap_rate=overlap_rate
         self.cold_dir = cold_dir
         # self._seperateUser()
         self.input_dir = input_dir
@@ -49,6 +52,9 @@ class DSNRecDataset:
             else:
                 fn = os.path.join(self.cold_dir, fn)
                 self.overlap_user = pkload(fn)
+                random.shuffle(self.overlap_user)
+                test_num = int(len(self.overlap_user) * self.overlap_rate)
+                self.overlap_user = self.overlap_user[:test_num]
 
         src_u = defaultdict(list)
         tgt_u = defaultdict(list)
