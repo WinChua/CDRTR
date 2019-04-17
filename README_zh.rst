@@ -3,55 +3,56 @@ CrossDomainReviewTextRecommendation
 
 .. contents:: 目录
 
-Review-Aware Cross Domain Production Recommendation
----------------------------------------------------
-Focus on Rating Prediction Problem
+基于评论文本的跨领域商品推荐
+----------------------------
+关注于评分预测问题
 
-* Incorporating the sentiment information of review text into the modeling of user.
-* Transform the User Domain-Shared Preference from source domain to target domain by DSN [#]_ for cold start user.
-* Generate the rating for cold start user and product in target domain by Matrix Factorization.
+* 利用用户对商品的评论文本进行建模, 获取用户向量以及商品向量表示
+* 利用DSN [#]_ 等Domain Adaptation方法构建用户在源领域与目标领域上的关联
+* 利用待推荐用户在目标领域上的向量为用户在源领域上进行推荐
 
-All the experiments is based on Amazon Dataset.
-You could download them at http://jmcauley.ucsd.edu/data/amazon/
+所有的实验基于Amazon公开的数据集
+下载地址: http://jmcauley.ucsd.edu/data/amazon/
 
 Good Luck
 
-Specification of Path Tree
---------------------------
+目录说明
+--------
+This is a paragraph. Its' quite
+short.
 
 ::
 
 
   ├── CDRTR
   │   ├── core
-  │   │   ├── DeepModel: code path of some DL model, including SentiRec, DSN, DSNRec
-  │   │   └── LinearModel: code path of some linear model, including LR
-  │   ├── dataset: dataset adapter for SentiRec, DSNRec
-  │   └── preprocess: The process of preprocess, including generating the vocabulary of two domain
-  │                   Word Embedding, tool to count the number of cool start user
-  ├── exam: directory containes the experiment dataset, script to generate the rmse result
-  │   ├── data: small dataset to test the code
-  │   │   ├── preprocess: path to save the output of some the preprocess
-  │   │   └── source: path to save source dataset
+  │   │   ├── DeepModel: DL代码路径, 包括SentiRec, DSN, DSNRec
+  │   │   └── LinearModel: 包括LR
+  │   ├── dataset: 为SentiRec, DSNRec 编写的数据集类
+  │   ├── preprocess: 文本预处理工具, 包括, 两个领域词典生成,
+                      词向量化, 统计领域用户交叠情况, 冷用户统计等
+  ├── exam: 实验代码路径
+  │   ├── data: 样例数据集
+  │   │   ├── preprocess: 预处理数据输出路径
+  │   │   └── source: 原数据存放路径
   │   ├── log
   │   │   ├── baseline
   │   │   ├── debug_generateVoca_MultiCross
   │   │   ├── debug_mergeUI_MultiCross
   │   │   ├── DSNRec
   │   │   └── sentitrain
-  │   └── MultiCross: path the dataset to explort the cross-available of domains
+  │   ├── MultiCross: 多领域相互跨领域推荐实验数据路径
   │       ├── Beauty_Clothin_Shoes_and_Jewelry
   │       ├── Beauty_Movies_and_TV
   │       ├── Kindle_Beauty
   │       ├── Kindle_Clothin_Shoes_and_Jewelry
   │       ├── Kindle_Movies_and_TV
   │       └── Movies_and_TV_Clothin_Shoes_and_Jewelry
-  └── tests: some test code
+  ├── tests: 测试代码路径
 
-How to Run it?
+实验运行方法
 ---------------
-There is a makefile under the exam directory.
-The content of it is shown as below.
+在exam目录下面有一个makefile, 内容如下:
 
 ::
 
@@ -81,18 +82,19 @@ The content of it is shown as below.
     DSNRec:
         python -m CDRTR.core.DeepModel.DSNRec --data_dir $(DATA) --src_domain $(SRCDO) --tgt_domain $(TGTDO) --epoches $(EPOCH) --mode $(MODE)
 
+makefile中设置了多个任务, 包括:
 
-1. generatevoca: transform the json data saved in data/source/ to some file, including the vocabulary of two domain, statistic of cold start user and so on.
+1. generatevoca: 预处理原json数据(存放在data/source/), 该任务将统计两个领域数据, 生成词典, 冷用户情况等;
 
-2. transCSV: transform json data into csv file, which is used by MyMediaLite to perform the baseline.
+2. transCSV: 将json格式的原数据处理为csv格式, 方便使用MyMediaLite进行baseline实验
 
-3. sentitrain: to train sentiRec [#]_ with dataset, taking the output of the lastest layer of CNN as the vector form of review text.
+3. sentitrain: 对两个领域用户评论评分数据进行sentiRec [#]_ 训练, 获取CNN层输出作为评论句子的向量表示
 
-4. mergeUI: merge the vector form of review text into user/product representation.
+4. mergeUI: 将sentitrain输出的评论文本聚合为用户, item的向量表示
 
-5. DSNRec: DSNRec to run on specific dataset.
+5. DSNRec: 对两个领域数据进行跨领域推荐
 
-the pipeline.sh file under exam/ directory containes the execution sequence of makefile.
+exam目录下的pipeline.sh脚本文件, 包含了上述几个步骤的运行
 
 ::
 
@@ -105,7 +107,7 @@ example:
   winchua@CCNLForDL:~/CrossDomainReviewTextRecommendation/CDRTR/exam$ ./pipeline.sh data Auto Musi 400
   ...
   ...
-  # after you run DSNRec on several dataset, you can output the RMSE by the script below.
+  # 运行了多个实验之后, 可以通过如下脚本查看各个领域针对完全冷启动用户的评分预测RMSE结果
   winchua@CCNLForDL:~/CrossDomainReviewTextRecommendation/CDRTR/exam$ python show_result.py `find . -name "test*.pk" | grep -v MultiCross`
   +-------------+----------------+
   |    domain   |      rmse      |
@@ -175,8 +177,8 @@ example:
   +----------------------------+-------------------------------+---------------------------+----------+-------------+---------+-----------------+---------------+-------------+-----------------------------+
 
 
-Checking the structure of DSNRec by Tensorboard
------------------------------------------------
+Tensorboard查看模型结构
+-----------------------
 
 ::
 
@@ -188,8 +190,8 @@ Checking the structure of DSNRec by Tensorboard
 
 .. image:: https://raw.githubusercontent.com/WinChua/CDRTR/master/docs/source/_static/model.bmp
 
-Reference
----------
+参考引用
+--------
 
 .. [#] Bousmalis, K., Trigeorgis, G., Silberman, N., Krishnan, D., & Erhan, D. (2016). Domain SeparationNetworks, (Nips). Retrieved from http://arxiv.org/abs/1608.06019
 .. [#] Hyun, D., Park, C., Yang, M.-C., Song, I., Lee, J.-T., & Yu, H. (2018). Review Sentiment-Guided Scalable DeepRecom-mender System. Ann SIGIR, 18, 965–968. https://doi.org/10.1145/3209978.3210111
